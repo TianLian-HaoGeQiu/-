@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<title>regist</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+	</head>
+	<body>
+		<div id="wrap">
+			<div id="top_content">
+					<div id="header">
+						<div id="rightheader">
+							<p>
+								2020/11/20
+								<br />
+							</p>
+						</div>
+						<div id="topheader">
+							<h1 id="title">
+								<a href="#">main</a>
+							</h1>
+						</div>
+						<div id="navigation">
+						</div>
+					</div>
+				<div id="content">
+					<p id="whereami">
+					</p>
+					<h1>
+						注册
+					</h1>
+					<form action="login.html" method="post">
+						<table cellpadding="0" cellspacing="0" border="0"
+							class="form_table">
+							<tr>
+								<td valign="middle" align="right">
+									用户名:
+								</td>
+								<td valign="middle" align="left">
+									<input type="text" class="inputgri" v-model="user.username"  />
+								</td>
+							</tr>
+							<tr>
+								<td valign="middle" align="right">
+									真实姓名:
+								</td>
+								<td valign="middle" align="left">
+									<input type="text" class="inputgri" v-model="user.realname"  />
+								</td>
+							</tr>
+							<tr>
+								<td valign="middle" align="right">
+									密码:
+								</td>
+								<td valign="middle" align="left">
+									<input type="password" class="inputgri" v-model="user.password" />
+								</td>
+							</tr>
+							<tr>
+								<td valign="middle" align="right">
+									性别:
+								</td>
+								<td valign="middle" align="left">
+									男
+									<input type="radio" class="inputgri"  v-model="user.sex" value="男" checked="checked"/>
+									女
+									<input type="radio" class="inputgri" v-model="user.sex"  value="女"/>
+								</td>
+							</tr>
+
+							<tr>
+								<td valign="middle" align="right">
+									验证码:
+								</td>
+								<td valign="middle" align="left">
+									<input type="text" v-model="code" class="inputgri" />
+								</td>
+								<td>
+									<img id="num" :src="url" />
+									<a href="javascript:;" @click="getImg">换一张</a><!--给这超级链接绑定一个单击事件getImg，这里需要通过VUE的方式去处理-->
+								</td>
+							</tr>
+						</table>
+						<p>
+							<input type="button" @click="register" class="button" value="Submit &raquo;" />
+						</p>
+					</form>
+				</div>
+			</div>
+			<div id="footer">
+				<div id="footer_bg">
+				ABC@126.com
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+<script src="/ems_vue/js/vue.js"></script>           <!--引入VUE相关的JS-->
+<script src="/ems_vue/js/axios.min.js"></script>     <!--引入axios，发异步请求-->
+<script>
+	var app = new Vue({      /*新建一个VUE实例*/
+		el:"#wrap",          /*el代表VUE的作用域。将整个页面挂载为VUE的作用域，因为上面的id=warp包含了所有标签*/
+		data:{               /*data代表作用域中说代表的数据*/
+			url:"",          /*如果要赋值的话就得首先在data里面去绑定一个URL*/
+			user:{
+				sex:"男"
+			},
+			code:"",
+		},
+		methods:{       /*VUE中的事件都是定义在methods里面的*/
+			//用来更换验证码实现，更换验证码也是要发送axios请求
+			getImg(){     /*定义getImg事件*/
+				this.getSrc();
+			},
+			//获取验证码的
+			getSrc(){
+				var  _this = this;       //下面可以加一个随机时间戳time，为了防止浏览器每次缓存我们的请求
+				axios.get("http://localhost:8989/ems_vue/user/getImage?time="+Math.random()).then(res=>{
+					_this.url = res.data;
+
+				});
+			},
+			//用来注册用户信息
+			register(){
+				axios.post("http://localhost:8989/ems_vue/user/register?code="+this.code,this.user).then(res=>{
+					console.log(res.data);
+					if(res.data.state){
+						alert(res.data.msg+",点击确定跳转至登录页面!");
+						location.href="/ems_vue/login.html";
+					}else{
+						alert(res.data.msg);
+					}
+				});
+			}
+		},
+		created(){              /*属于Vue生命周期里面的一个函数，作用是在页面正在创建（页面加载）的过程中执行这个函数里面的处理，
+								  我们日后就可以在created里面发送我们的异步请求，异步请求里面去拿到后台的验证码图片，然后只需要把这张图片相应到对应的image标签上就行*/
+			//获取验证码
+			this.getSrc();
+		}
+	})
+</script>
